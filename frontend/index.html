@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Helpdesk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── Reset ─────────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    /* ── Design tokens ──────────────────────────────────────────────────── */
+    :root {
+      --font-sans: 'DM Sans', sans-serif;
+      --font-mono: 'DM Mono', monospace;
+
+      /* Palette — dark slate + electric teal accent */
+      --bg-base:        #0f1117;
+      --bg-surface:     #181c26;
+      --bg-elevated:    #1e2330;
+      --bg-hover:       #252b3b;
+      --border:         #2a3045;
+      --border-strong:  #384058;
+
+      --text-primary:   #e8eaf0;
+      --text-secondary: #8b92a8;
+      --text-muted:     #555f7a;
+
+      --accent:         #00d4aa;
+      --accent-dim:     #00d4aa22;
+      --accent-hover:   #00efc0;
+
+      --danger:         #ff5c72;
+      --warning:        #ffb347;
+      --success:        #4cd98a;
+      --info:           #5b9cf6;
+
+      /* SLA colours */
+      --sla-ok:         #4cd98a;
+      --sla-warning:    #ffb347;
+      --sla-breached:   #ff5c72;
+
+      /* Priority */
+      --p-low:          #5b9cf6;
+      --p-medium:       #ffb347;
+      --p-high:         #ff8c42;
+      --p-critical:     #ff5c72;
+
+      --radius-sm:  6px;
+      --radius-md:  10px;
+      --radius-lg:  16px;
+      --sidebar-w:  220px;
+      --header-h:   56px;
+      --transition: 160ms ease;
+    }
+
+    /* ── Base ───────────────────────────────────────────────────────────── */
+    html, body { height: 100%; }
+    body {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    #app { height: 100%; }
+
+    /* ── Scrollbar ──────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 99px; }
+
+    /* ── Global utilities ───────────────────────────────────────────────── */
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
+    /* ── Page fade-in ───────────────────────────────────────────────────── */
+    .page-enter-active { animation: pageFadeIn 220ms ease; }
+    .page-leave-active { animation: pageFadeOut 160ms ease; }
+    @keyframes pageFadeIn  { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @keyframes pageFadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+    /* ── Buttons ────────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 0 16px; height: 36px; border-radius: var(--radius-sm);
+      font-family: var(--font-sans); font-size: 13px; font-weight: 500;
+      border: none; cursor: pointer; transition: all var(--transition);
+      white-space: nowrap; text-decoration: none;
+    }
+    .btn-primary  { background: var(--accent); color: #0a0f14; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-ghost    { background: transparent; color: var(--text-secondary); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--border-strong); color: var(--text-primary); background: var(--bg-hover); }
+    .btn-danger   { background: transparent; color: var(--danger); border: 1px solid var(--danger)33; }
+    .btn-danger:hover { background: var(--danger)15; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    /* ── Form elements ──────────────────────────────────────────────────── */
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field label { font-size: 12px; font-weight: 500; color: var(--text-secondary); letter-spacing: .04em; text-transform: uppercase; }
+    .input {
+      width: 100%; padding: 0 12px; height: 40px;
+      background: var(--bg-elevated); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); color: var(--text-primary);
+      font-family: var(--font-sans); font-size: 14px;
+      transition: border-color var(--transition);
+      outline: none;
+    }
+    .input:focus { border-color: var(--accent); }
+    .input::placeholder { color: var(--text-muted); }
+    select.input { cursor: pointer; }
+    textarea.input { height: auto; padding: 10px 12px; resize: vertical; line-height: 1.6; }
+
+    /* ── Cards ──────────────────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    /* ── Badges ─────────────────────────────────────────────────────────── */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500;
+    }
+    .badge-open       { background: var(--info)20;     color: var(--info); }
+    .badge-in_progress{ background: var(--accent-dim); color: var(--accent); }
+    .badge-awaiting_reply { background: var(--warning)20; color: var(--warning); }
+    .badge-resolved   { background: var(--success)20;  color: var(--success); }
+    .badge-closed     { background: var(--text-muted)20; color: var(--text-muted); }
+
+    .badge-low      { background: var(--p-low)20;      color: var(--p-low); }
+    .badge-medium   { background: var(--p-medium)20;   color: var(--p-medium); }
+    .badge-high     { background: var(--p-high)20;     color: var(--p-high); }
+    .badge-critical { background: var(--p-critical)20; color: var(--p-critical); }
+
+    /* ── SLA dot ────────────────────────────────────────────────────────── */
+    .sla-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; display: inline-block; }
+    .sla-ok      { background: var(--sla-ok); }
+    .sla-warning { background: var(--sla-warning); }
+    .sla-breached{ background: var(--sla-breached); box-shadow: 0 0 6px var(--sla-breached)80; }
+
+    /* ── Toast ──────────────────────────────────────────────────────────── */
+    .toast-wrap {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+    }
+    .toast {
+      padding: 12px 16px; border-radius: var(--radius-md);
+      background: var(--bg-elevated); border: 1px solid var(--border-strong);
+      font-size: 13px; max-width: 320px; pointer-events: all;
+      animation: toastIn 200ms ease;
+    }
+    .toast.error  { border-color: var(--danger)60; color: var(--danger); }
+    .toast.success{ border-color: var(--success)60; color: var(--success); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    /* ── Spinner ────────────────────────────────────────────────────────── */
+    .spinner {
+      width: 20px; height: 20px; border-radius: 50%;
+      border: 2px solid var(--border-strong);
+      border-top-color: var(--accent);
+      animation: spin .7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-center {
+      display: flex; align-items: center; justify-content: center;
+      padding: 60px; gap: 12px; color: var(--text-muted); font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- Vue 3 + Vue Router CDN -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js"></script>
+
+  <!-- App modules -->
+  <script src="services/http.js"></script>
+  <script src="services/auth.js"></script>
+  <script src="router/index.js"></script>
+  <script src="components/AppLayout.js"></script>
+  <script src="pages/LoginPage.js"></script>
+  <script src="pages/DashboardPage.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
