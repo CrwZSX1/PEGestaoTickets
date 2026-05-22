@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #222;">
+  <div style="background: #4cd98a; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: #0a3a1f; margin: 0;">O teu ticket foi resolvido</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <h3 style="margin-bottom: 4px;">#{ticket_id} — {title}</h3>
+    <p>Boas notícias! O nosso técnico marcou o teu pedido como <strong>resolvido</strong>.</p>
+    <p>Se o problema persistir podes reabrir o ticket adicionando um novo comentário.</p>
+    <p>
+      <a href="{frontend_url}/#/tickets/{ticket_id}"
+         style="display: inline-block; background: #4cd98a; color: #0a3a1f; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+        Ver ticket
+      </a>
+    </p>
+    <p style="color: #aaa; font-size: 11px; margin-top: 24px;">Sistema Helpdesk — email automático.</p>
+  </div>
+</body>
+</html>

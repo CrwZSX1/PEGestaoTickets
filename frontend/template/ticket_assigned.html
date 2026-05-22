@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #222;">
+  <div style="background: #00d4aa; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: #0a0f14; margin: 0;">Novo ticket atribuído</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <p>Foi-te atribuído um novo ticket de suporte:</p>
+    <h3 style="margin-bottom: 4px;">#{ticket_id} — {title}</h3>
+    <p style="color: #888; font-size: 13px; margin-top: 0;">Prioridade: <strong>{priority}</strong></p>
+    <p style="background: #f6f6f6; padding: 12px; border-radius: 4px; white-space: pre-wrap;">{description}</p>
+    <p>
+      <a href="{frontend_url}/#/tickets/{ticket_id}"
+         style="display: inline-block; background: #00d4aa; color: #0a0f14; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+        Abrir ticket
+      </a>
+    </p>
+    <p style="color: #aaa; font-size: 11px; margin-top: 24px;">Sistema Helpdesk — email automático.</p>
+  </div>
+</body>
+</html>

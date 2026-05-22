@@ -1,41 +1,52 @@
 """
 app/main.py
-Ponto de entrada da aplicação FastAPI
+Ponto de entrada da aplicação FastAPI.
+
+Inicializa a base de dados no startup, regista as rotas e configura CORS.
+Os jobs do APScheduler (IMAP poller + SLA checker) também arrancam no lifespan.
 """
+import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .config import settings
-from .database import init_db
+from app.config import settings
+from app.database import init_db
+from app.routes.auth import router as auth_router
+from app.routes.categories import router as categories_router
+from app.routes.reports import router as reports_router
+from app.routes.tickets import router as tickets_router
+from app.routes.users import router as users_router
+from app.services.scheduler import start_scheduler, stop_scheduler
+
+logging.basicConfig(
+    level=logging.INFO if not settings.debug else logging.DEBUG,
+    format="%(asctime)s %(levelname)s %(name)s — %(message)s",
+)
 
 
-# ── Lifespan (startup / shutdown) ──────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """
-    Executa tarefas de inicialização antes de aceitar requests
-    e tarefas de encerramento quando a app termina.
-    """
-    # Startup — importar todos os modelos antes de create_all()
-    import app.models  # noqa: F401
+    # ── Startup ─────────────────────────────────────────────────────────────
+    import app.models  # noqa: F401 — regista os modelos em Base.metadata
     init_db()
+    start_scheduler()
 
-    yield  # A aplicação está a correr
+    yield
 
-    # Shutdown (adicionar limpezas aqui se necessário)
+    # ── Shutdown ────────────────────────────────────────────────────────────
+    stop_scheduler()
 
 
-# ── Aplicação FastAPI ──────────────────────────────────────────────────────
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Sistema de gestão de tickets de helpdesk",
+    description="Sistema de helpdesk com workflow, SLA e ingestão de email.",
     lifespan=lifespan,
 )
 
-# ── CORS ───────────────────────────────────────────────────────────────────
+# ── CORS ────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
@@ -44,48 +55,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── Rotas ──────────────────────────────────────────────────────────────────
-from app.routes.tickets import router as tickets_router
+# ── Rotas ───────────────────────────────────────────────────────────────────
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(categories_router)
 app.include_router(tickets_router)
-
-# A descommentar nas próximas fases:
-# from app.routes.auth import router as auth_router
-# from app.routes.users import router as users_router
-# from app.routes.reports import router as reports_router
-# app.include_router(auth_router,    prefix="/auth",    tags=["Auth"])
-# app.include_router(users_router,   prefix="/users",   tags=["Utilizadores"])
-# app.include_router(reports_router, prefix="/reports", tags=["Relatórios"])
+app.include_router(reports_router)
 
 
-# ── Endpoints base ─────────────────────────────────────────────────────────
 @app.get("/", tags=["Root"])
 def root():
-    """Rota raiz — confirma que a API está online."""
     return {
         "message": f"Bem-vindo ao {settings.app_name}",
         "version": settings.app_version,
         "docs": "/docs",
-        "redoc": "/redoc",
     }
 
 
 @app.get("/health", tags=["Root"])
 def health_check():
-    """Health-check para monitorização e orquestração de containers."""
-    return {
-        "status": "online",
-        "app": settings.app_name,
-        "version": settings.app_version,
-    }
+    return {"status": "online", "version": settings.app_version}
 
 
-# ── Execução direta ────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import uvicorn
-
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=settings.debug,
-    )
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=settings.debug)

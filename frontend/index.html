@@ -176,17 +176,21 @@
 <body>
   <div id="app"></div>
 
-  <!-- Vue 3 + Vue Router CDN -->
+  <!-- Vue 3 + Vue Router + Chart.js CDN -->
   <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
   <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.prod.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 
   <!-- App modules -->
   <script src="services/http.js"></script>
   <script src="services/auth.js"></script>
-  <script src="router/index.js"></script>
   <script src="components/AppLayout.js"></script>
   <script src="pages/LoginPage.js"></script>
-  <script src="pages/DashboardPage.js"></script>
+  <script src="pages/TicketListPage.js"></script>
+  <script src="pages/TicketDetailPage.js"></script>
+  <script src="pages/AdminDashboardPage.js"></script>
+  <script src="pages/UsersPage.js"></script>
+  <script src="router/index.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

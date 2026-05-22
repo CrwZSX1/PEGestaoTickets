@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; color: #222;">
+  <div style="background: #ff5c72; padding: 16px 24px; border-radius: 8px 8px 0 0;">
+    <h2 style="color: white; margin: 0;">⚠️ SLA violado</h2>
+  </div>
+  <div style="border: 1px solid #ddd; border-top: none; padding: 24px; border-radius: 0 0 8px 8px;">
+    <p>O prazo de SLA do seguinte ticket foi <strong>ultrapassado</strong>:</p>
+    <h3 style="margin-bottom: 4px;">#{ticket_id} — {title}</h3>
+    <p style="color: #888; font-size: 13px;">
+      Prioridade: <strong>{priority}</strong><br>
+      Prazo: <strong>{deadline}</strong>
+    </p>
+    <p>É necessária atenção imediata para reduzir o impacto deste atraso.</p>
+    <p>
+      <a href="{frontend_url}/#/tickets/{ticket_id}"
+         style="display: inline-block; background: #ff5c72; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+        Abrir ticket
+      </a>
+    </p>
+    <p style="color: #aaa; font-size: 11px; margin-top: 24px;">Sistema Helpdesk — email automático.</p>
+  </div>
+</body>
+</html>

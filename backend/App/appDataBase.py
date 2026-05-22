@@ -1,34 +1,47 @@
 """
-backend/app/database.py
-Configuração do banco de dados SQLAlchemy + SQLite
+app/database.py
+Configuração do banco de dados SQLAlchemy + SQLite.
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
+
 from app.config import settings
 
-# Criar engine SQLAlchemy
+# ── Engine ─────────────────────────────────────────────────────────────────
 engine = create_engine(
-    settings.DATABASE_URL,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {},
-    echo=settings.DEBUG  # Log SQL queries se DEBUG=True
+    settings.database_url,
+    connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {},
+    echo=settings.debug,
 )
 
-# Session factory
+# ── Session factory ────────────────────────────────────────────────────────
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base para modelos
+# ── Base declarativa ───────────────────────────────────────────────────────
 Base = declarative_base()
 
-# Dependência para FastAPI
+
+def init_db() -> None:
+    """
+    Cria todas as tabelas declaradas em Base.metadata.
+
+    Importante: os modelos têm que ter sido importados antes desta chamada
+    (caso contrário Base.metadata estará vazio). O `app.main.lifespan`
+    importa `app.models` explicitamente antes de chamar esta função.
+    """
+    Base.metadata.create_all(bind=engine)
+
+
 def get_db():
     """
-    Cria uma sessão do banco de dados para cada request
-    Uso: 
+    Dependência FastAPI que cria uma sessão por request.
+
+    Uso:
         from fastapi import Depends
         from app.database import get_db
-        
+
         @app.get("/")
-        def my_endpoint(db: Session = Depends(get_db)):
+        def endpoint(db: Session = Depends(get_db)):
             ...
     """
     db = SessionLocal()

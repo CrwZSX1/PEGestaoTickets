@@ -29,6 +29,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 def create_access_token(data: dict) -> str:
     payload = data.copy()
+    # JWT standard: "sub" deve ser string
+    if "sub" in payload and not isinstance(payload["sub"], str):
+        payload["sub"] = str(payload["sub"])
     expire = datetime.now(timezone.utc) + timedelta(minutes=settings.access_token_expire_minutes)
     payload["exp"] = expire
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
@@ -46,13 +49,17 @@ def get_current_user(
     )
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        user_id: int | None = payload.get("sub")
-        if user_id is None:
+        sub = payload.get("sub")
+        if sub is None:
+            raise credentials_exc
+        try:
+            user_id = int(sub)
+        except (TypeError, ValueError):
             raise credentials_exc
     except JWTError:
         raise credentials_exc
 
-    user = db.query(User).filter(User.id == int(user_id), User.active == True).first()
+    user = db.query(User).filter(User.id == user_id, User.active == True).first()
     if not user:
         raise credentials_exc
     return user

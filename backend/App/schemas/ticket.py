@@ -112,6 +112,7 @@ class TicketOut(BaseModel):
     resolved_at: Optional[datetime]
     sla_deadline: Optional[datetime]
     sla_breached: bool
+    sla_status: Optional[str] = None  # "ok" | "warning" | "breached" — preenchido on-the-fly
     category: Optional[CategorySummary]
     creator: UserSummary
     assignee: Optional[UserSummary]

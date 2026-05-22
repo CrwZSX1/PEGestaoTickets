@@ -1,379 +1,135 @@
 """
-app/routes/tickets.py
-Endpoints de tickets: CRUD, transições de estado, atribuição e comentários
+app/models/ticket.py
+Modelo central — um pedido de suporte (ticket).
 
-Endpoints:
-  GET    /tickets                     — listar (filtros + paginação)
-  POST   /tickets                     — criar ticket (web)
-  GET    /tickets/{id}                — detalhe com comentários e histórico
-  PUT    /tickets/{id}                — editar título/descrição/prioridade/categoria
-  PUT    /tickets/{id}/status         — transição de estado (validada)
-  PUT    /tickets/{id}/assign         — atribuir/desatribuir técnico
-  POST   /tickets/{id}/comments       — adicionar comentário
+Inclui o enum de estados, a fonte (web/email) e o mapa de transições
+válidas usado pela API para validar mudanças de estado.
 """
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+import enum
+from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy.orm import Session, joinedload
-
-from app.auth import get_current_user, require_admin, require_admin_tech
-from app.database import get_db
-from app.models.sla_policy import Priority, SlaPolicy
-from app.models.ticket import VALID_TRANSITIONS, Ticket, TicketSource, TicketStatus
-from app.models.comment import Comment
-from app.models.ticket_history import TicketHistory
-from app.models.user import User, UserRole
-from app.schemas.ticket import (
-    CommentCreate, CommentOut,
-    TicketAssign, TicketCreate, TicketDetail, TicketOut,
-    TicketPage, TicketStatusUpdate, TicketUpdate,
+from sqlalchemy import (
+    Boolean, DateTime, Enum as SAEnum, ForeignKey, Integer, String, Text, func,
 )
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-router = APIRouter(prefix="/tickets", tags=["Tickets"])
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# HELPERS
-# ═══════════════════════════════════════════════════════════════════════════════
-
-def _record_history(
-    db: Session,
-    ticket_id: int,
-    user_id: int,
-    field: str,
-    old_value,
-    new_value,
-) -> None:
-    """Regista uma entrada no histórico de alterações do ticket."""
-    if str(old_value) == str(new_value):
-        return
-    db.add(TicketHistory(
-        ticket_id=ticket_id,
-        user_id=user_id,
-        field=field,
-        old_value=str(old_value) if old_value is not None else None,
-        new_value=str(new_value) if new_value is not None else None,
-    ))
+from app.database import Base
+from app.models.sla_policy import Priority
 
 
-def _set_sla_deadline(ticket: Ticket, db: Session) -> None:
-    """Calcula e define o prazo de SLA com base na prioridade do ticket."""
-    policy = db.query(SlaPolicy).filter(
-        SlaPolicy.priority == ticket.priority
-    ).first()
-    if policy:
-        ticket.sla_policy_id = policy.id
-        ticket.sla_deadline = datetime.now(timezone.utc) + timedelta(
-            hours=policy.resolution_hours
-        )
+# ── Enums ──────────────────────────────────────────────────────────────────
+class TicketStatus(str, enum.Enum):
+    open            = "open"
+    in_progress     = "in_progress"
+    awaiting_reply  = "awaiting_reply"
+    resolved        = "resolved"
+    closed          = "closed"
 
 
-def _can_see_internal(user: User) -> bool:
-    return user.role in (UserRole.admin, UserRole.tech)
+class TicketSource(str, enum.Enum):
+    web   = "web"
+    email = "email"
 
 
-def _filter_comments(comments: list, user: User) -> list:
-    """Remove comentários internos para utilizadores normais."""
-    if _can_see_internal(user):
-        return comments
-    return [c for c in comments if not c.is_internal]
+# ── Workflow ───────────────────────────────────────────────────────────────
+# Aberto → Em Curso → Aguarda Resposta → Resolvido → Fechado
+# Permitimos também retroceder (resolved→in_progress, etc.) para corrigir enganos.
+VALID_TRANSITIONS: dict[TicketStatus, list[TicketStatus]] = {
+    TicketStatus.open: [
+        TicketStatus.in_progress,
+        TicketStatus.awaiting_reply,
+        TicketStatus.resolved,
+    ],
+    TicketStatus.in_progress: [
+        TicketStatus.awaiting_reply,
+        TicketStatus.resolved,
+        TicketStatus.open,
+    ],
+    TicketStatus.awaiting_reply: [
+        TicketStatus.in_progress,
+        TicketStatus.resolved,
+        TicketStatus.open,
+    ],
+    TicketStatus.resolved: [
+        TicketStatus.closed,
+        TicketStatus.in_progress,  # reabrir
+    ],
+    TicketStatus.closed: [
+        TicketStatus.in_progress,  # reabrir
+    ],
+}
 
 
-def _get_ticket_or_404(ticket_id: int, db: Session) -> Ticket:
-    ticket = (
-        db.query(Ticket)
-        .options(
-            joinedload(Ticket.creator),
-            joinedload(Ticket.assignee),
-            joinedload(Ticket.category),
-            joinedload(Ticket.sla_policy),
-            joinedload(Ticket.comments).joinedload(Comment.author),
-            joinedload(Ticket.history).joinedload(TicketHistory.changed_by),
-        )
-        .filter(Ticket.id == ticket_id)
-        .first()
+# ── Modelo ─────────────────────────────────────────────────────────────────
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+
+    status: Mapped[TicketStatus] = mapped_column(
+        SAEnum(TicketStatus), default=TicketStatus.open, nullable=False, index=True,
     )
-    if not ticket:
-        raise HTTPException(status_code=404, detail="Ticket não encontrado")
-    return ticket
-
-
-def _check_ticket_access(ticket: Ticket, user: User) -> None:
-    """
-    Regras de acesso:
-    - Admin: vê tudo
-    - Tech: vê todos os tickets
-    - User: só vê os seus próprios tickets
-    """
-    if user.role == UserRole.user and ticket.creator_id != user.id:
-        raise HTTPException(status_code=403, detail="Sem acesso a este ticket")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# GET /tickets — Listagem com filtros e paginação
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.get("", response_model=TicketPage)
-def list_tickets(
-    # Filtros
-    status_filter: Optional[TicketStatus] = Query(None, alias="status"),
-    priority: Optional[Priority] = Query(None),
-    category_id: Optional[int] = Query(None),
-    assignee_id: Optional[int] = Query(None),
-    search: Optional[str] = Query(None, description="Pesquisa em título e descrição"),
-    # Paginação
-    page: int = Query(1, ge=1),
-    page_size: int = Query(20, ge=1, le=100),
-    # Auth
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    q = db.query(Ticket).options(
-        joinedload(Ticket.creator),
-        joinedload(Ticket.assignee),
-        joinedload(Ticket.category),
+    priority: Mapped[Priority] = mapped_column(
+        SAEnum(Priority), default=Priority.medium, nullable=False, index=True,
+    )
+    source: Mapped[TicketSource] = mapped_column(
+        SAEnum(TicketSource), default=TicketSource.web, nullable=False,
     )
 
-    # Utilizadores normais só vêem os seus tickets
-    if current_user.role == UserRole.user:
-        q = q.filter(Ticket.creator_id == current_user.id)
-
-    # Aplicar filtros
-    if status_filter:
-        q = q.filter(Ticket.status == status_filter)
-    if priority:
-        q = q.filter(Ticket.priority == priority)
-    if category_id:
-        q = q.filter(Ticket.category_id == category_id)
-    if assignee_id:
-        q = q.filter(Ticket.assignee_id == assignee_id)
-    if search:
-        term = f"%{search}%"
-        q = q.filter(
-            Ticket.title.ilike(term) | Ticket.description.ilike(term)
-        )
-
-    total = q.count()
-    items = (
-        q.order_by(Ticket.created_at.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .all()
+    # FKs
+    category_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True,
+    )
+    creator_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="RESTRICT"), nullable=False, index=True,
+    )
+    assignee_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True,
+    )
+    sla_policy_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sla_policies.id", ondelete="SET NULL"), nullable=True,
     )
 
-    return TicketPage(total=total, page=page, page_size=page_size, items=items)
+    # SLA
+    sla_deadline: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    sla_breached: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
+    # Timestamps
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False,
+    )
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# POST /tickets — Criar ticket (web)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.post("", response_model=TicketOut, status_code=status.HTTP_201_CREATED)
-def create_ticket(
-    body: TicketCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ticket = Ticket(
-        title=body.title,
-        description=body.description,
-        priority=body.priority,
-        category_id=body.category_id,
-        source=TicketSource.web,
-        creator_id=current_user.id,
-        status=TicketStatus.open,
+    # ── Relações ────────────────────────────────────────────────────────────
+    creator: Mapped["User"] = relationship(   # type: ignore[name-defined]
+        "User", foreign_keys=[creator_id], back_populates="created_tickets"
+    )
+    assignee: Mapped["User | None"] = relationship(  # type: ignore[name-defined]
+        "User", foreign_keys=[assignee_id], back_populates="assigned_tickets"
+    )
+    category: Mapped["Category | None"] = relationship(  # type: ignore[name-defined]
+        "Category", back_populates="tickets"
+    )
+    sla_policy: Mapped["SlaPolicy | None"] = relationship(  # type: ignore[name-defined]
+        "SlaPolicy", back_populates="tickets"
+    )
+    comments: Mapped[list["Comment"]] = relationship(    # type: ignore[name-defined]
+        "Comment", back_populates="ticket",
+        cascade="all, delete-orphan", order_by="Comment.created_at",
+    )
+    history: Mapped[list["TicketHistory"]] = relationship(  # type: ignore[name-defined]
+        "TicketHistory", back_populates="ticket",
+        cascade="all, delete-orphan", order_by="TicketHistory.changed_at",
     )
 
-    # Definir prazo de SLA
-    _set_sla_deadline(ticket, db)
-
-    # Atribuição automática por categoria
-    if body.category_id:
-        from app.models.category import Category
-        cat = db.query(Category).filter(Category.id == body.category_id).first()
-        if cat and cat.auto_assign_to_user_id:
-            ticket.assignee_id = cat.auto_assign_to_user_id
-
-    db.add(ticket)
-    db.commit()
-    db.refresh(ticket)
-
-    # Recarregar com relações
-    return _get_ticket_or_404(ticket.id, db)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# GET /tickets/{id} — Detalhe com comentários e histórico
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.get("/{ticket_id}", response_model=TicketDetail)
-def get_ticket(
-    ticket_id: int,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ticket = _get_ticket_or_404(ticket_id, db)
-    _check_ticket_access(ticket, current_user)
-
-    # Filtrar comentários internos para utilizadores normais
-    ticket.comments = _filter_comments(ticket.comments, current_user)
-    return ticket
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PUT /tickets/{id} — Editar campos básicos
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.put("/{ticket_id}", response_model=TicketOut)
-def update_ticket(
-    ticket_id: int,
-    body: TicketUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ticket = _get_ticket_or_404(ticket_id, db)
-    _check_ticket_access(ticket, current_user)
-
-    # Utilizadores só editam os seus próprios tickets em aberto
-    if current_user.role == UserRole.user and ticket.status != TicketStatus.open:
-        raise HTTPException(
-            status_code=403,
-            detail="Só é possível editar tickets em estado 'Aberto'",
+    def __repr__(self) -> str:
+        return (
+            f"<Ticket id={self.id} status={self.status} "
+            f"priority={self.priority} title={self.title!r}>"
         )
-
-    update_data = body.model_dump(exclude_unset=True)
-    for field, value in update_data.items():
-        old = getattr(ticket, field)
-        setattr(ticket, field, value)
-        _record_history(db, ticket.id, current_user.id, field, old, value)
-
-    # Recalcular SLA se prioridade mudou
-    if "priority" in update_data:
-        _set_sla_deadline(ticket, db)
-
-    db.commit()
-    return _get_ticket_or_404(ticket_id, db)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PUT /tickets/{id}/status — Transição de estado (validada)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.put("/{ticket_id}/status", response_model=TicketOut)
-def update_ticket_status(
-    ticket_id: int,
-    body: TicketStatusUpdate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin_tech),
-):
-    ticket = _get_ticket_or_404(ticket_id, db)
-
-    if body.status == ticket.status:
-        raise HTTPException(status_code=400, detail="O ticket já está nesse estado")
-
-    allowed = VALID_TRANSITIONS.get(ticket.status, [])
-    if body.status not in allowed:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Transição inválida: {ticket.status} → {body.status}. "
-                f"Transições permitidas: {[s.value for s in allowed]}"
-            ),
-        )
-
-    old_status = ticket.status
-    ticket.status = body.status
-
-    # Marcar data de resolução
-    if body.status == TicketStatus.resolved:
-        ticket.resolved_at = datetime.now(timezone.utc)
-    elif body.status == TicketStatus.open:
-        ticket.resolved_at = None
-
-    _record_history(db, ticket.id, current_user.id, "status", old_status, body.status)
-    db.commit()
-    return _get_ticket_or_404(ticket_id, db)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# PUT /tickets/{id}/assign — Atribuir/desatribuir técnico
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.put("/{ticket_id}/assign", response_model=TicketOut)
-def assign_ticket(
-    ticket_id: int,
-    body: TicketAssign,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(require_admin_tech),
-):
-    ticket = _get_ticket_or_404(ticket_id, db)
-
-    # Validar que o assignee existe e é tech/admin
-    if body.assignee_id is not None:
-        assignee = db.query(User).filter(
-            User.id == body.assignee_id,
-            User.active == True,
-        ).first()
-        if not assignee:
-            raise HTTPException(status_code=404, detail="Utilizador não encontrado")
-        if assignee.role == UserRole.user:
-            raise HTTPException(
-                status_code=400,
-                detail="Só é possível atribuir tickets a técnicos ou admins",
-            )
-
-    old_assignee = ticket.assignee_id
-    ticket.assignee_id = body.assignee_id
-
-    _record_history(db, ticket.id, current_user.id, "assignee_id", old_assignee, body.assignee_id)
-    db.commit()
-    return _get_ticket_or_404(ticket_id, db)
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# POST /tickets/{id}/comments — Adicionar comentário
-# ═══════════════════════════════════════════════════════════════════════════════
-
-@router.post(
-    "/{ticket_id}/comments",
-    response_model=CommentOut,
-    status_code=status.HTTP_201_CREATED,
-)
-def add_comment(
-    ticket_id: int,
-    body: CommentCreate,
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
-):
-    ticket = _get_ticket_or_404(ticket_id, db)
-    _check_ticket_access(ticket, current_user)
-
-    # Utilizadores não podem criar notas internas
-    if body.is_internal and current_user.role == UserRole.user:
-        raise HTTPException(
-            status_code=403,
-            detail="Utilizadores não podem criar comentários internos",
-        )
-
-    # Não comentar em tickets fechados (excepto admins)
-    if ticket.status == TicketStatus.closed and current_user.role != UserRole.admin:
-        raise HTTPException(
-            status_code=400,
-            detail="Não é possível comentar num ticket fechado",
-        )
-
-    comment = Comment(
-        ticket_id=ticket_id,
-        user_id=current_user.id,
-        body=body.body,
-        is_internal=body.is_internal,
-    )
-    db.add(comment)
-    db.commit()
-    db.refresh(comment)
-
-    # Carregar relação author
-    db.refresh(comment)
-    comment.author  # trigger lazy load
-    return comment
