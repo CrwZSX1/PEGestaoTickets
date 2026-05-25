@@ -15,4 +15,3 @@ app.component('users-page',           UsersPage);
 
 app.use(router);
 app.mount('#app');
-

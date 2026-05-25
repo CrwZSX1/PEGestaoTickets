@@ -1,0 +1,523 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║          🔧 COMO CORRER O PROJETO NO VISUAL STUDIO CODE 🔧               ║
+║                                                                            ║
+║                    Guia Passo-a-Passo Completo                            ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+════════════════════════════════════════════════════════════════════════════════
+📋 REQUISITOS
+════════════════════════════════════════════════════════════════════════════════
+
+✅ Visual Studio Code instalado
+   Descarregar em: https://code.visualstudio.com/
+
+✅ Python instalado (3.8+)
+   Descarregar em: https://www.python.org/
+
+✅ Git instalado (opcional mas recomendado)
+   Descarregar em: https://git-scm.com/
+
+✅ Ficheiro helpdesk-final.zip descomprimido
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 PASSO 1: ABRIR O PROJETO NO VSCODE
+════════════════════════════════════════════════════════════════════════════════
+
+1. Abra o Visual Studio Code
+2. Clique em: File → Open Folder (Ficheiro → Abrir Pasta)
+3. Navegue para: /caminho/para/helpdesk/
+4. Clique em "Select Folder" (Selecionar Pasta)
+
+O projeto está agora aberto no VS Code!
+
+
+════════════════════════════════════════════════════════════════════════════════
+🔧 PASSO 2: INSTALAR EXTENSÕES RECOMENDADAS
+════════════════════════════════════════════════════════════════════════════════
+
+No VS Code, clique em Extensions (Ctrl+Shift+X ou Cmd+Shift+X) e procure:
+
+PARA BACKEND (Python):
+  1. Python
+     Autor: Microsoft
+     Instale este
+     
+  2. Pylance
+     Autor: Microsoft
+     IntelliSense avançado para Python
+     
+  3. Flask
+     Autor: cstrap
+     Opcional, para melhor suporte FastAPI
+
+PARA FRONTEND (Vue):
+  1. Vetur
+     Autor: Pine Wu
+     Suporte para ficheiros .vue/.js
+     
+  2. ES7+ React/Redux/React-Native snippets
+     Autor: dsznajder
+     Snippets úteis para JavaScript
+
+GERAL:
+  1. REST Client
+     Autor: Huachao Mao
+     Testar API endpoints direto no VS Code
+     
+  2. Prettier - Code formatter
+     Autor: Prettier
+     Formatar código automaticamente
+     
+  3. Thunder Client
+     Autor: Ranga Vadhineni
+     Alternativa a Postman para testar API
+
+Depois de instalar, clique em "Reload" se pedido.
+
+
+════════════════════════════════════════════════════════════════════════════════
+🐍 PASSO 3: CONFIGURAR PYTHON NO VSCODE
+════════════════════════════════════════════════════════════════════════════════
+
+1. Abra a Paleta de Comandos: Ctrl+Shift+P (Windows/Linux) ou Cmd+Shift+P (Mac)
+
+2. Procure por: "Python: Select Interpreter"
+
+3. Clique nela
+
+4. Escolha o Python do projeto:
+   Procure por um que contenha: "./backend/venv"
+   
+   OU escolha: "Enter interpreter path..."
+   E digite: ./backend/venv/bin/python (Linux/Mac)
+              .\backend\venv\Scripts\python.exe (Windows)
+
+5. VS Code vai usar este Python
+
+
+════════════════════════════════════════════════════════════════════════════════
+📂 PASSO 4: ABRIR DOIS TERMINAIS INTEGRADOS
+════════════════════════════════════════════════════════════════════════════════
+
+Opção A: Via Menu
+  1. Clique em: Terminal → New Terminal (ou Ctrl+`)
+  2. Clique novamente em: Terminal → New Terminal (para 2º terminal)
+
+Opção B: Via Teclado
+  1. Pressione: Ctrl+` para abrir 1º terminal
+  2. Pressione: Ctrl+Shift+` para abrir 2º terminal
+  
+Agora tem 2 abas de terminal abertos na base do VS Code.
+
+
+════════════════════════════════════════════════════════════════════════════════
+🚀 PASSO 5: CORRER O BACKEND
+════════════════════════════════════════════════════════════════════════════════
+
+NO TERMINAL 1:
+
+1. Navegue para a pasta backend:
+   cd backend
+
+2. Ative o virtual environment:
+   
+   NO WINDOWS:
+   .\venv\Scripts\activate
+   
+   NO MAC/LINUX:
+   source venv/bin/activate
+   
+   Deve ver algo como: (venv) C:\users\...>
+
+3. Corra o servidor:
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+4. Se correr com sucesso, verá:
+   INFO:     Uvicorn running on http://0.0.0.0:8000
+   INFO:     Application startup complete
+   
+5. Teste se está funcionando:
+   Abra browser e vá a: http://localhost:8000/health
+   Deve ver: {"status":"online","version":"1.0.0"}
+
+✅ BACKEND ESTÁ RODANDO!
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎨 PASSO 6: CORRER O FRONTEND
+════════════════════════════════════════════════════════════════════════════════
+
+NO TERMINAL 2:
+
+1. Navegue para a pasta frontend:
+   cd frontend
+
+2. Corra o servidor:
+   python -m http.server 5500
+
+3. Se correr com sucesso, verá:
+   Serving HTTP on 0.0.0.0 port 5500
+
+4. Abra o browser:
+   http://localhost:5500
+
+✅ FRONTEND ESTÁ RODANDO!
+
+
+════════════════════════════════════════════════════════════════════════════════
+🌐 PASSO 7: ACEDER À APLICAÇÃO
+════════════════════════════════════════════════════════════════════════════════
+
+1. Abra browser (Chrome, Firefox, Safari, Edge)
+
+2. Vá a: http://localhost:5500
+
+3. Deve ver a página de login
+
+4. Faça login com:
+   Email: admin@helpdesk.local
+   Password: admin123
+
+5. Explore a aplicação!
+
+
+════════════════════════════════════════════════════════════════════════════════
+🐛 PASSO 8: DEBUGGING NO VSCODE
+════════════════════════════════════════════════════════════════════════════════
+
+DEBUGGAR BACKEND (Python):
+
+1. Abra ficheiro: backend/app/main.py
+
+2. Clique no número de linha para colocar um breakpoint (ponto vermelho)
+
+3. No VS Code, vá a: Run → Start Debugging (F5)
+
+4. Escolha "Python" como ambiente
+
+5. O código vai parar no breakpoint quando executado
+
+6. Use os botões de debug para:
+   - Step Over (F10)
+   - Step Into (F11)
+   - Continue (F5)
+
+DEBUGGAR FRONTEND (JavaScript):
+
+1. Abra ficheiro: frontend/pages/LoginPage.js
+
+2. Clique no número de linha para breakpoint
+
+3. No Browser, abra: F12 → Console
+
+4. O código vai parar no breakpoint
+
+5. Inspecione variáveis na aba "Debugger"
+
+
+════════════════════════════════════════════════════════════════════════════════
+🧪 PASSO 9: TESTAR API COM REST CLIENT
+════════════════════════════════════════════════════════════════════════════════
+
+1. Crie ficheiro: rest.http (na raiz do projeto)
+
+2. Cole isto:
+
+@baseUrl = http://localhost:8000
+
+### Health Check
+GET {{baseUrl}}/health
+
+### Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/x-www-form-urlencoded
+
+username=admin@helpdesk.local&password=admin123
+
+### Get Current User
+GET {{baseUrl}}/auth/me
+Authorization: Bearer SEU_TOKEN_AQUI
+
+### List Tickets
+GET {{baseUrl}}/tickets?page=1&page_size=5
+Authorization: Bearer SEU_TOKEN_AQUI
+
+### Create Ticket
+POST {{baseUrl}}/tickets
+Authorization: Bearer SEU_TOKEN_AQUI
+Content-Type: application/json
+
+{
+  "title": "Test Ticket",
+  "description": "Test description",
+  "priority": "high",
+  "category_id": 1
+}
+
+3. Clique em "Send Request" acima de cada endpoint
+
+4. Ver resposta na aba de lado
+
+
+════════════════════════════════════════════════════════════════════════════════
+📝 PASSO 10: EDITAR CÓDIGO
+════════════════════════════════════════════════════════════════════════════════
+
+EDITAR BACKEND:
+
+1. Abra ficheiro em: backend/app/routes/tickets.py
+
+2. Faça uma mudança qualquer
+
+3. SALVE (Ctrl+S)
+
+4. O servidor vai auto-recarregar (--reload ativa isto)
+
+5. Ver mudanças no browser automaticamente
+
+EDITAR FRONTEND:
+
+1. Abra ficheiro em: frontend/pages/TicketListPage.js
+
+2. Faça uma mudança
+
+3. SALVE (Ctrl+S)
+
+4. Refresque o browser (F5 ou Ctrl+R)
+
+5. Ver mudanças imediatamente
+
+
+════════════════════════════════════════════════════════════════════════════════
+⚙️ PASSO 11: CONFIGURAÇÃO AVANÇADA (OPCIONAL)
+════════════════════════════════════════════════════════════════════════════════
+
+CRIAR FICHEIRO .vscode/launch.json PARA DEBUGAR:
+
+1. Clique em: Run → Add Configuration
+
+2. Escolha: Python
+
+3. VS Code cria ficheiro .vscode/launch.json
+
+4. Mude para:
+
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: FastAPI Backend",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--reload",
+                "--host", "0.0.0.0",
+                "--port", "8000"
+            ],
+            "jinja": true,
+            "cwd": "${workspaceFolder}/backend",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}/backend"
+            }
+        }
+    ]
+}
+
+5. Agora pode fazer F5 para debugar diretamente do VS Code
+
+
+════════════════════════════════════════════════════════════════════════════════
+📁 PASSO 12: ESTRUTURA DE FICHEIROS NO VSCODE
+════════════════════════════════════════════════════════════════════════════════
+
+No Explorer (Ctrl+B), vai ver:
+
+helpdesk/
+├── 📚 Documentação (13 ficheiros)
+├── 🐍 backend/
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── auth.py
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── schemas/
+│   │   └── services/
+│   ├── venv/
+│   └── requirements.txt
+│
+└── 🎨 frontend/
+    ├── index.html
+    ├── app.js
+    ├── pages/
+    ├── router/
+    ├── services/
+    └── components/
+
+Para abrir pasta rapidamente:
+1. Clique em Explorer (Ctrl+B)
+2. Procure a pasta
+3. Duplo clique para abrir ficheiros
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎨 PASSO 13: MELHORAR EXPERIÊNCIA NO VSCODE
+════════════════════════════════════════════════════════════════════════════════
+
+CONFIGURAÇÕES RECOMENDADAS:
+
+1. Abra Settings: Ctrl+, (Windows/Linux) ou Cmd+, (Mac)
+
+2. Procure por:
+
+   "python.linting.enabled": true
+   "python.linting.pylintEnabled": true
+   "editor.formatOnSave": true
+   "editor.defaultFormatter": "esbenp.prettier-vscode"
+   "editor.wordWrap": "on"
+   "files.autoSave": "afterDelay"
+
+3. Salve (Ctrl+S)
+
+
+════════════════════════════════════════════════════════════════════════════════
+❓ TROUBLESHOOTING
+════════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA: "Python não encontrado"
+SOLUÇÃO: Escolha Python interpreter (Passo 3)
+
+PROBLEMA: "venv não ativa"
+SOLUÇÃO: Use o caminho completo do Python (Passo 3)
+
+PROBLEMA: "Porta 8000 já está em uso"
+SOLUÇÃO: 
+  1. Abra terminal
+  2. Windows: netstat -ano | findstr :8000
+  3. Mac/Linux: lsof -i :8000
+  4. Mate o processo ou use porta diferente: --port 8001
+
+PROBLEMA: "Frontend não carrega"
+SOLUÇÃO:
+  1. Verifique se backend está rodando (http://localhost:8000/health)
+  2. Verifique se frontend está rodando (Terminal 2)
+  3. Refresque browser (Ctrl+Shift+R)
+  4. Limpe cache (F12 → Application → Clear Storage)
+
+PROBLEMA: "Erro de módulo Python"
+SOLUÇÃO:
+  1. Verifique se venv está ativado: (venv) deve aparecer no terminal
+  2. Instale dependências: pip install -r requirements.txt
+  3. Verifique Python correto: python --version
+
+PROBLEMA: "JavaScript não funciona no Frontend"
+SOLUÇÃO:
+  1. Abra F12 → Console
+  2. Ver erro exato
+  3. Verifique se backend está respondendo
+  4. Refresque página (F5)
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 CHECKLIST RÁPIDO - COMEÇAR AGORA
+════════════════════════════════════════════════════════════════════════════════
+
+☐ 1. VS Code instalado
+☐ 2. Python 3.8+ instalado
+☐ 3. Projectо descomprimido
+☐ 4. Paste aberta no VS Code (File → Open Folder)
+☐ 5. Extensões instaladas (Python, Vetur, REST Client)
+☐ 6. Python interpreter selecionado
+☐ 7. 2 terminais abertos
+☐ 8. Terminal 1: cd backend && ./venv/Scripts/activate && uvicorn...
+☐ 9. Terminal 2: cd frontend && python -m http.server 5500
+☐ 10. Browser: http://localhost:5500
+☐ 11. Login: admin@helpdesk.local / admin123
+☐ 12. ✅ SUCESSO!
+
+
+════════════════════════════════════════════════════════════════════════════════
+💡 DICAS E ATALHOS
+════════════════════════════════════════════════════════════════════════════════
+
+ATALHOS ÚTEIS:
+  Ctrl+` — Abrir/fechar terminal integrado
+  Ctrl+K Ctrl+O — Abrir ficheiro
+  Ctrl+Shift+P — Paleta de comandos
+  Ctrl+/ — Comentar linha
+  Ctrl+B — Toggle Explorer
+  Ctrl+H — Find and Replace
+  Ctrl+D — Select word (selecionar palavra)
+  Alt+Up/Down — Mover linha
+  Ctrl+L — Select linha
+  Ctrl+Shift+Enter — Insert linha acima
+
+DEBUGGING:
+  F5 — Start/Continue debugging
+  F10 — Step Over
+  F11 — Step Into
+  Shift+F11 — Step Out
+  Ctrl+Shift+F5 — Restart
+
+FORMATAR CÓDIGO:
+  Shift+Alt+F — Format document (formatar documento)
+  Ctrl+K Ctrl+F — Format selection
+
+
+════════════════════════════════════════════════════════════════════════════════
+🚀 PRÓXIMOS PASSOS
+════════════════════════════════════════════════════════════════════════════════
+
+Depois de correr:
+
+1. EXPLORAR O CÓDIGO:
+   ├─ Leia backend/app/main.py (entrada da API)
+   ├─ Leia backend/app/routes/tickets.py (core logic)
+   ├─ Leia frontend/pages/TicketListPage.js (interface)
+   └─ Leia documentação
+
+2. FAZER MODIFICAÇÕES:
+   ├─ Adicione novo campo em Ticket
+   ├─ Crie novo endpoint
+   ├─ Modifique interface
+   └─ Teste tudo
+
+3. APRENDER:
+   ├─ Entenda FastAPI
+   ├─ Entenda Vue 3
+   ├─ Entenda SQLAlchemy
+   └─ Construa features novas
+
+4. DEPLOY:
+   ├─ Docker
+   ├─ Railway
+   ├─ Heroku
+   └─ DigitalOcean
+
+
+════════════════════════════════════════════════════════════════════════════════
+✨ RESUMO FINAL
+════════════════════════════════════════════════════════════════════════════════
+
+No VS Code:
+  ✅ Abrir pasta helpdesk
+  ✅ Instalar extensões Python + Vetur
+  ✅ Abrir 2 terminais
+  ✅ Terminal 1: cd backend && venv ativa && uvicorn
+  ✅ Terminal 2: cd frontend && python http.server
+  ✅ Browser: http://localhost:5500
+  ✅ Login e usar!
+
+Tempo para começar: 10 minutos
+Tempo para dominar: 1-2 dias
+
+════════════════════════════════════════════════════════════════════════════════
+
+Boa sorte! 🚀
+
+════════════════════════════════════════════════════════════════════════════════

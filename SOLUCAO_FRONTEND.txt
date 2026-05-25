@@ -1,0 +1,158 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║          ✅ SOLUÇÃO: FRONTEND NÃO CARREGA O INDEX.HTML ✅                ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+📋 O PROBLEMA
+════════════════════════════════════════════════════════════════════════════
+
+Você vê: "Directory listing for /helpdesk/"
+Esperado: Página de login da aplicação
+
+Isto acontece porque python -m http.server não carrega index.html automaticamente.
+
+
+🔧 SOLUÇÃO 1: USAR PYTHON HTTP SERVER COM DEFAULT (RECOMENDADO)
+════════════════════════════════════════════════════════════════════════════
+
+NO TERMINAL 2, CANCELE (Ctrl+C) o servidor atual.
+
+Depois corra ESTE comando em vez:
+
+Windows/Mac/Linux (QUALQUER UM):
+  cd frontend
+  python -m http.server 5500 --directory .
+
+OU mais simples ainda:
+
+  python -m http.server 5500
+
+
+DEPOIS:
+
+1. Abra browser: http://localhost:5500/index.html
+
+2. Ou crie um ficheiro que redirecione:
+
+   Abra VS Code
+   Clique em: File → New File
+   Salve como: .htaccess
+   Cole isto:
+   
+   <IfModule mod_rewrite.c>
+     RewriteEngine On
+     RewriteBase /
+     RewriteRule ^index\.html$ - [L]
+     RewriteCond %{REQUEST_FILENAME} !-f
+     RewriteCond %{REQUEST_FILENAME} !-d
+     RewriteRule . /index.html [L]
+   </IfModule>
+
+
+🔧 SOLUÇÃO 2: USAR OUTRO SERVIDOR HTTP (MELHOR)
+════════════════════════════════════════════════════════════════════════════
+
+Instale http-server (Node.js):
+
+1. Instale Node.js: https://nodejs.org/
+
+2. No terminal:
+   npm install -g http-server
+
+3. Na pasta frontend:
+   cd frontend
+   http-server -p 5500 -c-1
+
+4. Abra: http://localhost:5500/
+
+
+🔧 SOLUÇÃO 3: CRIE UM SCRIPT PYTHON PERSONALIZADO
+════════════════════════════════════════════════════════════════════════════
+
+1. Na pasta frontend, crie: server.py
+
+2. Cole isto:
+
+import http.server
+import socketserver
+import os
+
+os.chdir('.')
+
+class MyHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        if self.path.endswith('/'):
+            self.path = self.path + 'index.html'
+        return http.server.SimpleHTTPRequestHandler.do_GET(self)
+
+PORT = 5500
+
+Handler = MyHTTPRequestHandler
+
+with socketserver.TCPServer(("", PORT), Handler) as httpd:
+    print(f"Server running at http://localhost:{PORT}/")
+    print("Press Ctrl+C to stop")
+    httpd.serve_forever()
+
+3. Corra:
+   python server.py
+
+4. Abra: http://localhost:5500/
+
+
+🔧 SOLUÇÃO 4: USAR LIVE SERVER (MAIS FÁCIL)
+════════════════════════════════════════════════════════════════════════════
+
+1. No VS Code, abra Extensions (Ctrl+Shift+X)
+
+2. Procure: "Live Server"
+   
+3. Instale (autor: Ritwick Dey)
+
+4. Clique direito em index.html
+
+5. Escolha: "Open with Live Server"
+
+6. Abre automaticamente em http://localhost:5500/
+
+7. Auto-refresh quando muda ficheiros!
+
+✅ MELHOR OPÇÃO PARA DESENVOLVIMENTO!
+
+
+════════════════════════════════════════════════════════════════════════════
+✅ RECOMENDAÇÃO FINAL
+════════════════════════════════════════════════════════════════════════════
+
+Use LIVE SERVER (Solução 4):
+
+1. Instale extensão Live Server
+2. Clique direito em index.html → "Open with Live Server"
+3. PRONTO! Funciona automaticamente
+4. Auto-reload quando edita código
+
+
+════════════════════════════════════════════════════════════════════════════
+🎯 DEPOIS DA SOLUÇÃO
+════════════════════════════════════════════════════════════════════════════
+
+Quando for ao browser e ver a página correta:
+
+1. Login com:
+   Email: admin@helpdesk.local
+   Password: admin123
+
+2. Deve ver:
+   ✓ Lista de tickets
+   ✓ Dashboard
+   ✓ Formulários
+
+SE ISTO FUNCIONAR = ✅ SUCESSO!
+
+════════════════════════════════════════════════════════════════════════════
+
+Tente primeiro a SOLUÇÃO 4 (Live Server) - é a mais fácil!
+
+════════════════════════════════════════════════════════════════════════════

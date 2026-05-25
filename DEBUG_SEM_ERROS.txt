@@ -1,0 +1,153 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║        🔍 TELA PRETA MAS SEM ERROS NA CONSOLA - DEBUGAR 🔍               ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+⚡ PASSO 1: VERIFICAR SE ESTÁ REALMENTE A RODAR
+════════════════════════════════════════════════════════════════════════════
+
+No F12, escreva DIRECTAMENTE na consola:
+
+console.log("Vue é:", window.Vue)
+
+Pressione ENTER.
+
+Resultado esperado:
+✅ "Vue é: Object { ... }"
+
+Se vir isto, Vue está carregado!
+
+
+⚡ PASSO 2: VERIFICAR SE APP ESTÁ MONTADA
+════════════════════════════════════════════════════════════════════════════
+
+Na consola, escreva:
+
+console.log("App:", window.app)
+
+Pressione ENTER.
+
+Resultado esperado:
+✅ "App: Proxy { ... }" OU "App: Object { ... }"
+
+Se vir isto, app está a rodar!
+
+
+⚡ PASSO 3: VERIFICAR O HTML RENDERIZADO
+════════════════════════════════════════════════════════════════════════════
+
+No F12, clique em: Elements (não Console!)
+
+Procure por:
+<div id="app">...</div>
+
+Se estiver VAZIO: <div id="app"></div>
+→ Vue não renderizou nada
+
+Se tiver CONTEÚDO: <div id="app"><div class="login-page">...</div></div>
+→ Vue está a renderizar!
+
+
+⚡ PASSO 4: VERIFICAR ALTURA DA PÁGINA
+════════════════════════════════════════════════════════════════════════════
+
+Na consola, escreva:
+
+document.documentElement.scrollHeight
+
+Pressione ENTER.
+
+Se vir: 0
+→ Página tem altura 0!
+
+Se vir: Um número > 1000
+→ Página tem conteúdo
+
+
+⚡ PASSO 5: VERIFICAR FUNDO PRETO
+════════════════════════════════════════════════════════════════════════════
+
+Na consola, escreva:
+
+document.body.style.backgroundColor
+
+Pressione ENTER.
+
+Se vir: "black" OU algo tipo rgb(0,0,0)
+→ Fundo é preto!
+
+Para mudar:
+document.body.style.backgroundColor = "white"
+
+
+════════════════════════════════════════════════════════════════════════════
+🔍 O QUE FAZER AGORA
+════════════════════════════════════════════════════════════════════════════
+
+OPÇÃO 1: Se Vue e App estão carregados
+───────────────────────────────────────
+
+Significa que o código está bem, mas o HTML/CSS tem problema.
+
+Na consola, escreva:
+
+document.getElementById("app").innerHTML
+
+Pressione ENTER.
+
+DIGA-ME O QUE VÊ (copie o resultado).
+
+Se vir HTML (tipo <div class="...">), Vue está a renderizar!
+Se vir vazio (""), Vue não renderizou!
+
+
+OPÇÃO 2: Se Vue NÃO está carregado
+───────────────────────────────────
+
+Significa que Vue CDN não carregou.
+
+Solução:
+1. Abra frontend/index.html
+2. Procure: <script src="https://unpkg.com/vue...
+3. Verifique que o link é:
+   https://unpkg.com/vue@3/dist/vue.global.js
+4. Se estiver diferente, corrija
+
+
+OPÇÃO 3: Se App NÃO está rodando
+────────────────────────────────
+
+Significa que app.js tem erro.
+
+Solução:
+1. Abra frontend/app.js
+2. Verifique linha 1:
+   const app = Vue.createApp({ ... })
+3. Se não tiver isto, há erro!
+4. Verifique se browser console mostra erros (mesmo que não veja na primeira olhada)
+
+
+════════════════════════════════════════════════════════════════════════════
+📋 DIGA-ME AGORA
+════════════════════════════════════════════════════════════════════════════
+
+Escreva na consola (F12) e COPIE EXACTAMENTE o que aparece:
+
+1. console.log("Vue é:", window.Vue)
+   → Resultado: ?
+
+2. console.log("App:", window.app)
+   → Resultado: ?
+
+3. document.getElementById("app").innerHTML
+   → Resultado: ?
+
+COM ESTES RESULTADOS RESOLVO RÁPIDO!
+
+════════════════════════════════════════════════════════════════════════════
+
+Tente agora! 🚀
+
+════════════════════════════════════════════════════════════════════════════

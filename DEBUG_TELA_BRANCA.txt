@@ -1,0 +1,189 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║              🔧 DEBUGAR TELA BRANCA / NÃO CARREGA 🔧                     ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+🔴 PASSO 1: ABRIR CONSOLA DE DEVELOPER
+════════════════════════════════════════════════════════════════════════════
+
+Pressione: F12
+
+Deve abrir um painel na base/lado do browser.
+
+
+🔴 PASSO 2: VER ERROS
+════════════════════════════════════════════════════════════════════════════
+
+Na consola (F12), procure por:
+
+❌ Erros em VERMELHO
+⚠️ Avisos em AMARELO
+ℹ️ Informações em AZUL
+
+Escreva aqui o que vê (copie o erro).
+
+
+🔴 PASSO 3: VERIFICAR NETWORK
+════════════════════════════════════════════════════════════════════════════
+
+Clique na aba: Network
+
+Refresque a página: F5
+
+Procure por ficheiros que NÃO carregaram (com X vermelho):
+
+- index.html (DEVE estar ✓)
+- app.js (DEVE estar ✓)
+- Vue (CDN)
+- Chart.js (CDN)
+
+Se algum estiver com X → há problema de conexão.
+
+
+🔴 PASSO 4: VERIFICAR SE BACKEND ESTÁ RODANDO
+════════════════════════════════════════════════════════════════════════════
+
+Abra nova aba no browser:
+
+http://localhost:8000/health
+
+DEVE VER:
+{"status":"online","version":"1.0.0"}
+
+Se NÃO vê isto → Backend NÃO está rodando!
+
+
+════════════════════════════════════════════════════════════════════════════
+🔍 POSSÍVEIS PROBLEMAS E SOLUÇÕES
+════════════════════════════════════════════════════════════════════════════
+
+PROBLEMA 1: Tela totalmente branca
+────────────────────────────────────
+
+CAUSA: Vue.js não carregou ou há erro no código
+
+SOLUÇÃO:
+1. Pressione F12
+2. Vá à aba "Console"
+3. Procure por erros em VERMELHO
+4. Copie o erro exato
+5. Se houver, está no ficheiro:
+   - frontend/app.js (Vue init)
+   - frontend/index.html (Vue CDN)
+   - frontend/router/index.js (routing)
+
+
+PROBLEMA 2: "Failed to fetch" / CORS error
+────────────────────────────────────────────
+
+CAUSA: Backend não está rodando ou tem CORS bloqueado
+
+SOLUÇÃO:
+1. Verifique se backend está rodando:
+   http://localhost:8000/health
+
+2. Se VER erro, verifique no Terminal 1:
+   - "(venv)" está a aparecer?
+   - "uvicorn running" está a aparecer?
+   
+3. Se não:
+   Terminal 1:
+   cd backend
+   source venv/bin/activate  (Mac/Linux) OU .\venv\Scripts\activate (Windows)
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+
+PROBLEMA 3: Ficheiros não carregam (Network tab com X)
+─────────────────────────────────────────────────────
+
+CAUSA: Ficheiros não encontrados ou URL errada
+
+SOLUÇÃO:
+1. Verifique que index.html está em: frontend/
+2. Verifique que app.js está em: frontend/
+3. Verifique URLs no index.html estão corretas
+
+Abra: frontend/index.html
+
+Procure por:
+<script src="app.js"></script>
+<script src="router/index.js"></script>
+
+Se caminhos estão errados, corrija.
+
+
+PROBLEMA 4: "ReferenceError: Vue is not defined"
+─────────────────────────────────────────────────
+
+CAUSA: Vue.js CDN não carregou
+
+SOLUÇÃO:
+1. Abra: frontend/index.html
+2. Procure por: <script src="https://unpkg.com/vue...
+3. Verifique se está ANTES de app.js
+4. Ordem correcta:
+   1. Vue CDN
+   2. Vue Router CDN
+   3. Chart.js CDN
+   4. app.js (ÚLTIMO)
+
+
+PROBLEMA 5: "Cannot GET /index.html"
+────────────────────────────────────
+
+CAUSA: Servidor HTTP está com problema
+
+SOLUÇÃO:
+1. Cancel servidor (Ctrl+C)
+2. Corra: python -m http.server 5500
+3. Refresque: F5
+
+
+════════════════════════════════════════════════════════════════════════════
+✅ O QUE FAZER AGORA
+════════════════════════════════════════════════════════════════════════════
+
+1. Pressione F12 para abrir consola
+
+2. Vá à aba "Console"
+
+3. Procure por erros em VERMELHO
+
+4. COPIE o erro exato e diga-me qual é
+
+5. Verificar Backend está rodando:
+   http://localhost:8000/health
+   
+6. Se estiver a ver a página mas em branco:
+   - Espere 3-5 segundos (pode estar a carregar)
+   - Refresque (Ctrl+R ou Cmd+R)
+   - Limpe cache (Ctrl+Shift+Delete)
+
+
+════════════════════════════════════════════════════════════════════════════
+📝 QUANDO SOUBER O ERRO
+════════════════════════════════════════════════════════════════════════════
+
+Diga-me EXACTAMENTE qual é o erro que vê na consola (F12).
+
+Por exemplo:
+- "TypeError: Cannot read property 'mount' of undefined"
+- "SyntaxError in app.js line 5"
+- "Failed to fetch from http://localhost:8000"
+- Etc.
+
+COM O ERRO EXATO, posso ajudar rapidamente!
+
+
+════════════════════════════════════════════════════════════════════════════
+
+Tente agora:
+1. Pressione F12
+2. Procure por erros VERMELHOS
+3. Diga-me o que vê
+
+Boa sorte! 🚀
+
+════════════════════════════════════════════════════════════════════════════

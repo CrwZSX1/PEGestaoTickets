@@ -1,0 +1,194 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                  🔧 SOLUÇÃO: TELA PRETA 🔧                               ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+⚡ PASSO 1: VERIFICAR BACKEND
+════════════════════════════════════════════════════════════════════════════
+
+ABRA NOVA ABA NO BROWSER E VAI PARA:
+
+http://localhost:8000/health
+
+OPÇÃO A: VÊ {"status":"online","version":"1.0.0"}
+→ Backend está OK ✅
+
+OPÇÃO B: Erro de conexão / Cannot reach
+→ Backend NÃO está rodando! ❌
+
+SE FOR OPÇÃO B:
+
+No Terminal 1, verifique:
+1. Está a correr? (Se não vê "Uvicorn running...")
+2. Activate venv:
+   Windows: .\backend\venv\Scripts\activate
+   Mac/Linux: source backend/venv/bin/activate
+3. Corra: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+4. Espere aparecer: INFO:     Uvicorn running on http://0.0.0.0:8000
+
+
+⚡ PASSO 2: ABRIR CONSOLA (F12)
+════════════════════════════════════════════════════════════════════════════
+
+No browser, pressione: F12
+
+Clique na aba: Console
+
+Procure por QUALQUER COISA em VERMELHO.
+
+Se vir erros, COPIE-OS exactamente.
+
+
+⚡ PASSO 3: VERIFICAR FICHEIROS
+════════════════════════════════════════════════════════════════════════════
+
+No F12, clique em: Network
+
+Refresque página: F5
+
+Procure por ficheiros que NÃO carregaram (X vermelho):
+
+✅ index.html — DEVE estar
+✅ app.js — DEVE estar
+✅ CDNs (Vue, Chart.js) — DEVEM estar
+
+❌ Se algum tem X → está quebrado
+
+
+⚡ PASSO 4: LIMPAR CACHE
+════════════════════════════════════════════════════════════════════════════
+
+Às vezes cache antigo causa problemas.
+
+Pressione: Ctrl+Shift+Delete (Windows/Linux) ou Cmd+Shift+Delete (Mac)
+
+Clique: "Clear browsing data"
+Escolha: "All time"
+Marque: "Cached images and files"
+Clique: "Clear data"
+
+Depois refresque: F5
+
+
+⚡ PASSO 5: VERIFICAR FICHEIROS FRONTEND
+════════════════════════════════════════════════════════════════════════════
+
+No VS Code, navegue para:
+
+frontend/
+
+Verifique que EXISTEM:
+☐ index.html
+☐ app.js
+☐ pages/ (pasta)
+☐ router/ (pasta)
+☐ services/ (pasta)
+☐ components/ (pasta)
+
+SE ALGUM FALTA → há problema com os ficheiros!
+
+
+════════════════════════════════════════════════════════════════════════════
+🔍 CAUSAS COMUNS DE TELA PRETA
+════════════════════════════════════════════════════════════════════════════
+
+CAUSA 1: Backend não está rodando
+──────────────────────────────────
+SINTOMA: F12 → Console → "Failed to fetch"
+SOLUÇÃO: Arrancar backend (vê PASSO 1)
+
+CAUSA 2: Vue.js CDN não carregou
+─────────────────────────────────
+SINTOMA: F12 → Console → "Vue is not defined"
+SOLUÇÃO: 
+  1. Abra frontend/index.html
+  2. Procure: <script src="https://unpkg.com/vue...
+  3. Verifique se o link está correto
+  4. Se não funciona, pode estar internet lenta ou CDN down
+
+CAUSA 3: Erro em app.js
+──────────────────────
+SINTOMA: F12 → Console → Erro em linha X
+SOLUÇÃO:
+  1. Abra frontend/app.js
+  2. Procure a linha do erro
+  3. Verifique se há erros de sintaxe
+
+CAUSA 4: Ficheiros não encontrados
+──────────────────────────────────
+SINTOMA: F12 → Network → Alguns ficheiros com X
+SOLUÇÃO:
+  1. Verifique caminhos no index.html
+  2. Exemplo: <script src="app.js"></script> ✅
+  3. NÃO: <script src="./app.js"></script> ❌
+
+CAUSA 5: Porto errado
+────────────────────
+SINTOMA: Tela preta, sem erros
+SOLUÇÃO:
+  1. Verifique que está em http://localhost:5500
+  2. Backend em http://localhost:8000
+  3. Não confundir as portas!
+
+
+════════════════════════════════════════════════════════════════════════════
+✅ CHECKLIST RÁPIDO
+════════════════════════════════════════════════════════════════════════════
+
+☐ 1. Abrir F12 → Console
+☐ 2. Procurar erros VERMELHOS
+☐ 3. Verificar http://localhost:8000/health
+☐ 4. Backend está rodando? (Terminal 1 com "Uvicorn running")
+☐ 5. Frontend está rodando? (Terminal 2 com "Serving HTTP")
+☐ 6. URL correcta? http://localhost:5500 (NÃO /helpdesk)
+☐ 7. Limpar cache (Ctrl+Shift+Delete)
+☐ 8. Refresque (F5)
+
+
+════════════════════════════════════════════════════════════════════════════
+🚨 ÚLTIMO RECURSO - REINICIAR TUDO
+════════════════════════════════════════════════════════════════════════════
+
+Se nada funciona:
+
+1. Feche os 2 terminais (Ctrl+C em cada um)
+
+2. Feche VS Code completamente
+
+3. Reabra VS Code
+
+4. Abra 2 terminais novos (Ctrl+`)
+
+5. Terminal 1:
+   cd backend
+   .\venv\Scripts\activate (Windows) OU source venv/bin/activate (Mac/Linux)
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+6. Terminal 2:
+   cd frontend
+   python -m http.server 5500
+
+7. Browser: http://localhost:5500
+
+8. F5 (refresque)
+
+
+════════════════════════════════════════════════════════════════════════════
+📝 DIGA-ME
+════════════════════════════════════════════════════════════════════════════
+
+Quando tiver a tela preta, diga-me:
+
+1. Qual é o erro na consola (F12)? (copie o texto em vermelho)
+
+2. O backend está rodando? (http://localhost:8000/health funciona?)
+
+3. Qual é a URL exacta no browser? (http://localhost:5500?)
+
+4. Network tab mostra algum ficheiro com X?
+
+COM ESTAS INFORMAÇÕES RESOLVO RÁPIDO! 🚀
+
+════════════════════════════════════════════════════════════════════════════

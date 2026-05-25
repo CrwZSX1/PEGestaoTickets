@@ -1,0 +1,310 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║                    ÁRVORE VISUAL COMPLETA DO PROJETO                      ║
+║                                                                            ║
+║                       Helpdesk — 25/05/2026                               ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+HELPDESK/ (52 ficheiros, ~4.300 linhas de código)
+│
+├─ 📚 DOCUMENTAÇÃO (9 ficheiros .md/.txt)
+│  ├─ 00_COMECE_AQUI.txt ......................... Guia rápido inicial
+│  ├─ README.md .................................. Setup em 5 min
+│  ├─ PROGRESSO.md ............................... Status por fase
+│  ├─ FINAL_SUMMARY.md ........................... Resumo executivo
+│  ├─ RELATORIO_FINAL.txt ........................ Métricas detalhadas
+│  ├─ COMPARACAO.md .............................. Análise vs anterior
+│  ├─ ENTREGA.md ................................. Checklist final
+│  ├─ FICHEIROS_CRIADOS.txt ...................... Inventário
+│  └─ DIAGRAMA_COMPLETO.txt ...................... Este diagrama
+│
+├─ 🔧 SCRIPTS E CONFIG
+│  ├─ test.sh .................................... Validação do projeto
+│  └─ .gitignore ................................. Configuração git
+│
+│
+├─────────────────────────────────────────────────────────────────────────
+│ 📁 BACKEND/ (32 ficheiros Python + 4 templates)
+├─────────────────────────────────────────────────────────────────────────
+│
+├─ 📋 CONFIG
+│  ├─ requirements.txt ........................... Dependências (FastAPI, SQLAlchemy, JWT...)
+│  ├─ .env.example ............................... Variáveis de ambiente
+│  └─ .gitignore ................................. Ignorar .venv, __pycache__, *.db
+│
+├─ 🐍 app/ (CÓDIGO PRINCIPAL)
+│  │
+│  ├─ __init__.py ................................ Package init
+│  ├─ main.py (⭐100 linhas) ...................... FastAPI + lifespan + CORS + routers
+│  ├─ config.py .................................. Configurações (snake_case)
+│  ├─ database.py ................................ SQLAlchemy + SQLite + init_db()
+│  ├─ auth.py .................................... JWT + hash_password + verify + roles
+│  ├─ seed.py .................................... Dados exemplo (6 users, 10 tickets)
+│  │
+│  ├─ 📁 models/ (6 tabelas ORM)
+│  │  ├─ __init__.py ............................. Imports
+│  │  ├─ user.py ................................ User + UserRole enum
+│  │  ├─ ticket.py (⭐) .......................... Ticket + TicketStatus + VALID_TRANSITIONS
+│  │  ├─ category.py ............................. Category
+│  │  ├─ comment.py .............................. Comment (is_internal)
+│  │  ├─ ticket_history.py ....................... TicketHistory
+│  │  └─ sla_policy.py ........................... SlaPolicy + Priority enum
+│  │
+│  ├─ 📁 routes/ (5 routers, 20+ endpoints)
+│  │  ├─ __init__.py ............................. Routes init
+│  │  ├─ auth.py ................................. /auth/login, /auth/me
+│  │  ├─ users.py ................................ /users (CRUD, role, status)
+│  │  ├─ categories.py ........................... /categories (CRUD)
+│  │  ├─ tickets.py (⭐400+ linhas) ............. /tickets (CRUD+workflow+SLA+comments)
+│  │  └─ reports.py .............................. /reports (dashboard+CSV export)
+│  │
+│  ├─ 📁 schemas/ (4 validadores Pydantic)
+│  │  ├─ __init__.py ............................. Schemas init
+│  │  ├─ auth.py ................................. UserOut, UserCreate, LoginResponse
+│  │  ├─ ticket.py ............................... TicketCreate, TicketOut, TicketDetail
+│  │  ├─ dashboard.py ............................ DashboardResponse, Cards, Stats
+│  │  └─ user.py ................................. User schemas
+│  │
+│  └─ 📁 services/ (5 serviços)
+│     ├─ __init__.py ............................. Services init
+│     ├─ sla.py .................................. SLA computation (ok/warning/breached/done)
+│     ├─ email.py ................................ send_email() + notify_*() (4 templates)
+│     ├─ imap_poller.py .......................... poll_inbox_once() — ingestão email
+│     ├─ sla_checker.py .......................... check_sla_once() — job periódico
+│     └─ scheduler.py ............................ APScheduler (IMAP + SLA jobs)
+│
+├─ 📧 email_templates/ (4 HTML templates)
+│  ├─ ticket_assigned.html ....................... Email atribuição
+│  ├─ ticket_comment.html ........................ Email comentário
+│  ├─ ticket_resolved.html ....................... Email resolução
+│  └─ sla_breached.html .......................... Email SLA violado
+│
+├─ 🗄️ helpdesk.db ............................. SQLite (criado por seed)
+│
+└─ 🔧 .venv/ ................................ Virtual environment Python
+
+
+├─────────────────────────────────────────────────────────────────────────
+│ 📁 FRONTEND/ (11 ficheiros JavaScript + Vue)
+├─────────────────────────────────────────────────────────────────────────
+│
+├─ 📄 index.html ................................. HTML base (CDN: Vue 3, Chart.js)
+├─ 🎨 app.js .................................... Vue app init + regista componentes
+│
+├─ 📁 router/
+│  └─ index.js .................................. Vue Router (6 rotas + guardas)
+│     └─ /login, /tickets, /tickets/:id, /admin/dashboard, /admin/users
+│
+├─ 📁 services/ (2 serviços)
+│  ├─ http.js ................................... Fetch wrapper + JWT + download()
+│  └─ auth.js ................................... authService (isLoggedIn, currentUser)
+│
+├─ 📁 components/
+│  └─ AppLayout.js .............................. Sidebar + header + logout
+│
+└─ 📁 pages/ (5 PÁGINAS PRINCIPAIS)
+   ├─ LoginPage.js .............................. Form email/password
+   ├─ TicketListPage.js (⭐300+ linhas) ........ Tabela + filtros + paginação + create drawer
+   ├─ TicketDetailPage.js (⭐350+ linhas) ...... Detalhe + comentários + histórico + ações
+   ├─ AdminDashboardPage.js (⭐250+ linhas) .... Gráficos Chart.js + CSV + top técnicos
+   └─ UsersPage.js (⭐200+ linhas) ............ Gestão users (criar, role, status)
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         FLUXO DE DADOS                                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+CRIAR TICKET:
+
+  User (TicketListPage.js)
+        │
+        ├─► preenche form
+        │
+        ├─► clica "Criar"
+        │
+        └─► http.post('/tickets', {...})
+              │
+              └─► backend/routes/tickets.py::create_ticket()
+                    │
+                    ├─► valida com TicketCreate schema
+                    │
+                    ├─► cria Ticket model
+                    │
+                    ├─► calcula SLA (services/sla.py)
+                    │
+                    ├─► atribui com round-robin
+                    │
+                    ├─► retorna TicketOut schema
+                    │
+                    └─► services/email.py envia notificação (background)
+                          │
+                          └─► template HTML + SMTP
+
+
+LOGIN:
+
+  User (LoginPage.js)
+    │
+    ├─► email + password
+    │
+    └─► POST /auth/login
+          │
+          └─► routes/auth.py
+                │
+                ├─► busca User em BD
+                │
+                ├─► verifica password (auth.py::verify_password)
+                │
+                ├─► cria JWT token {"sub": user_id, "role": "admin"}
+                │
+                ├─► retorna token + user info
+                │
+                └─► frontend armazena em localStorage
+                      │
+                      └─► todos requests enviam "Authorization: Bearer <token>"
+
+
+SLA CHECK:
+
+  APScheduler job (a cada 5 min)
+    │
+    └─► services/sla_checker.py::check_sla_once()
+          │
+          ├─► busca tickets com sla_deadline < now
+          │
+          ├─► marca sla_breached = true
+          │
+          └─► notify_sla_breached() → email
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         ESTRUTURA DE BD (6 TABELAS)                       ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────┐
+│ USERS    │
+├──────────┤
+│ id (PK)  │
+│ name     │
+│ email(U) │
+│ pwd_hash │
+│ role     │◄──┐
+│ active   │   │
+│ created  │   │
+└──────────┘   │
+               │
+        ┌──────┴─────────┬──────────────┬─────────────┐
+        │                │              │             │
+┌───────┴────────┐  ┌────┴────────┐  ┌─┴──────────┐  │
+│ CATEGORIES     │  │ COMMENTS    │  │ HISTORY    │  │
+├────────────────┤  ├─────────────┤  ├────────────┤  │
+│ id (PK)        │  │ id (PK)     │  │ id (PK)    │  │
+│ name           │  │ ticket_id   │  │ ticket_id  │  │
+│ default_sla_h  │  │ user_id ────┘  │ user_id ───┘  │
+│ auto_assign_to │  │ body        │  │ field      │  │
+│   (FK→users)   │  │ is_internal │  │ old_value  │  │
+└────────┬───────┘  │ created_at  │  │ new_value  │  │
+         │          └─────────────┘  │ changed_at │  │
+         │                            └────────────┘  │
+         └──────────────┬──────────────────────────────┘
+                        │
+                  ┌─────▼──────────┐
+                  │ TICKETS        │
+                  ├────────────────┤
+                  │ id (PK)        │
+                  │ title          │
+                  │ description    │
+                  │ status         │
+                  │ priority       │
+                  │ source         │
+                  │ category_id(FK)│
+                  │ creator_id(FK) │
+                  │ assignee_id(FK)│
+                  │ sla_policy_id  │
+                  │ sla_deadline   │
+                  │ sla_breached   │
+                  │ created_at     │
+                  │ resolved_at    │
+                  └────────────────┘
+                        │
+                        │
+                  ┌─────▼──────────┐
+                  │ SLA_POLICIES   │
+                  ├────────────────┤
+                  │ id (PK)        │
+                  │ priority       │
+                  │ resp_hours     │
+                  │ resol_hours    │
+                  └────────────────┘
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         RESUMO ESTATÍSTICO                                ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+BACKEND:
+  ✅ 32 ficheiros Python
+  ✅ 6 tabelas ORM
+  ✅ 5 routers (20+ endpoints REST)
+  ✅ 4 schemas Pydantic
+  ✅ 5 serviços (SLA, Email, IMAP, Scheduler)
+  ✅ 4 templates HTML email
+  ✅ 2.486 linhas de código
+
+FRONTEND:
+  ✅ 11 ficheiros JavaScript
+  ✅ 5 páginas/componentes
+  ✅ 2 serviços (HTTP, Auth)
+  ✅ 1 layout reutilizável
+  ✅ 6 rotas com guardas
+  ✅ 1.758 linhas de código
+
+DOCUMENTAÇÃO:
+  ✅ 9 ficheiros markdown/txt
+  ✅ 1 script bash (test.sh)
+  ✅ 1.200+ linhas de documentação
+
+TOTAL: 52 ficheiros | 4.300+ linhas de código
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                    URLs E PORTS IMPORTANTES                               ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+Backend API:
+  http://localhost:8000                API principal
+  http://localhost:8000/docs           Swagger (auto-gerado)
+  http://localhost:8000/health         Health check
+
+Frontend:
+  http://localhost:5500                App Vue
+
+Development:
+  http://localhost:8025                Mailpit UI (se instalado)
+  localhost:1025                       SMTP (Mailpit)
+  localhost:1143                       IMAP (Mailpit)
+
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║                         FICHEIROS-CHAVE                                   ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+COMEÇAR POR AQUI:
+  1. 00_COMECE_AQUI.txt ........... Guia inicial
+  2. README.md .................... Setup
+  3. backend/app/main.py .......... Backend entry
+  4. frontend/index.html .......... Frontend entry
+
+CORE LOGIC:
+  backend/app/routes/tickets.py ... Toda a lógica de tickets
+  frontend/pages/TicketListPage.js  Interface principal
+
+VERIFICAÇÃO:
+  test.sh ......................... Validar projeto
+
+
+════════════════════════════════════════════════════════════════════════════
+                            DIAGRAMA COMPLETO!
+════════════════════════════════════════════════════════════════════════════

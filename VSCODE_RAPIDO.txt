@@ -1,0 +1,165 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                                                                            ║
+║         ⚡ GUIA RÁPIDO - CORRER NO VS CODE EM 5 PASSOS ⚡                ║
+║                                                                            ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+
+PASSO 1: ABRIR VS CODE
+════════════════════════════════════════════════════════════════════════════
+
+1. Abra o Visual Studio Code
+
+2. Clique em: File → Open Folder
+
+3. Navegue para a pasta: helpdesk
+
+4. Clique em "Select Folder"
+
+✅ Projeto aberto!
+
+
+PASSO 2: ABRIR DOIS TERMINAIS
+════════════════════════════════════════════════════════════════════════════
+
+Pressione: Ctrl+` (crase, aquela tecla perto do 1)
+
+Agora tem 1 terminal aberto.
+
+Pressione novamente: Ctrl+Shift+`
+
+Agora tem 2 terminais!
+
+
+PASSO 3: CORRER BACKEND (Terminal 1)
+════════════════════════════════════════════════════════════════════════════
+
+No PRIMEIRO terminal, escreva e pressione ENTER:
+
+Windows:
+  cd backend
+  .\venv\Scripts\activate
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+Mac/Linux:
+  cd backend
+  source venv/bin/activate
+  uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+Esperado ver:
+  INFO:     Uvicorn running on http://0.0.0.0:8000
+
+✅ Backend está rodando!
+
+
+PASSO 4: CORRER FRONTEND (Terminal 2)
+════════════════════════════════════════════════════════════════════════════
+
+Clique na ABA "2" do terminal (ou pressione Ctrl+`)
+
+No SEGUNDO terminal, escreva:
+
+  cd frontend
+  python -m http.server 5500
+
+Esperado ver:
+  Serving HTTP on 0.0.0.0 port 5500
+
+✅ Frontend está rodando!
+
+
+PASSO 5: ABRIR NO BROWSER
+════════════════════════════════════════════════════════════════════════════
+
+Abra o seu browser (Chrome, Firefox, Safari, Edge)
+
+Vá para: http://localhost:5500
+
+Login com:
+  Email: admin@helpdesk.local
+  Password: admin123
+
+✅ PRONTO! A APP ESTÁ A RODAR!
+
+
+════════════════════════════════════════════════════════════════════════════════
+🎯 EDITAR CÓDIGO
+════════════════════════════════════════════════════════════════════════════════
+
+Para mudar o código:
+
+1. Abra ficheiro no VS Code (Explorer à esquerda)
+
+2. Edite
+
+3. Salve (Ctrl+S)
+
+4. Refresque o browser (F5)
+
+BACKEND muda AUTOMATICAMENTE (--reload)
+FRONTEND precisa de refresh manual (F5)
+
+
+════════════════════════════════════════════════════════════════════════════════
+❌ ERRO? AQUI ESTÃO SOLUÇÕES
+════════════════════════════════════════════════════════════════════════════════
+
+ERRO: "Python não encontrado"
+→ Instale Python: https://www.python.org/
+
+ERRO: "venv não ativa"
+→ Use este em Windows:
+  cd backend
+  python -m venv venv
+  .\venv\Scripts\activate
+
+ERRO: "Porta 8000 em uso"
+→ Abra terminal diferente e faça:
+  Windows: netstat -ano | findstr :8000
+  Mac/Linux: lsof -i :8000
+→ Ou use porta diferente: --port 8001
+
+ERRO: "Frontend não carrega"
+→ Verifique:
+  1. Backend está rodando? (Terminal 1)
+  2. Frontend está rodando? (Terminal 2)
+  3. Refresque browser: Ctrl+Shift+R
+
+ERRO: "Módulo não encontrado"
+→ Instale dependências:
+  cd backend
+  pip install -r requirements.txt
+
+
+════════════════════════════════════════════════════════════════════════════════
+📋 CHECKLIST - CONSEGUIU?
+════════════════════════════════════════════════════════════════════════════════
+
+☐ VS Code aberto com pasta helpdesk
+☐ 2 terminais abertos
+☐ Terminal 1: venv ativado + uvicorn rodando
+☐ Terminal 2: http.server rodando
+☐ Browser: http://localhost:5500 carrega
+☐ Login funciona
+☐ Consegue ver lista de tickets
+
+SE TUDO ISTO ESTÁ FEITO = ✅ SUCESSO!
+
+
+════════════════════════════════════════════════════════════════════════════════
+💡 ATALHOS ÚTEIS
+════════════════════════════════════════════════════════════════════════════════
+
+Ctrl+` — Alternar terminal
+Ctrl+B — Mostrar/esconder explorer
+Ctrl+S — Salvar ficheiro
+F5 — Refresque browser
+Ctrl+/ — Comentar linha
+Ctrl+H — Find and Replace
+
+
+════════════════════════════════════════════════════════════════════════════════
+
+É ISTO! Simples assim! 🚀
+
+════════════════════════════════════════════════════════════════════════════════

@@ -1,3 +1,1 @@
-"""
-app/schemas/__init__.py
-"""
+"""app/schemas/__init__.py"""
